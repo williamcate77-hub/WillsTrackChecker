@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
+import { assess, type Gauge as GaugeData, type Reading } from "./assess";
 import { filesFromDrop } from "./files";
 import { downloadCsv, summarise, toCsv } from "./setSummary";
 import { useAnalyzer } from "./useAnalyzer";
@@ -8,6 +9,12 @@ const STATUS_LABEL: Record<Status, string> = {
   ok: "ready",
   caution: "worth a look",
   problem: "problem",
+};
+
+const STATUS_MARK: Record<Status, string> = {
+  ok: "✓",
+  caution: "!",
+  problem: "✕",
 };
 
 export function App() {
@@ -271,48 +278,76 @@ function Pill({ status, n }: { status: Status; n: number }) {
 }
 
 function TrackCard({ r }: { r: TrackResult }) {
+  const [open, setOpen] = useState(false);
+  const a = useMemo(() => assess(r, r.status, r.action), [r]);
+
   return (
-    <article className={`track track-${r.status}`}>
-      <div className="track-main">
-        <div className="track-name" title={r.name}>
-          {r.name}
+    <article className={`track track-${r.status}${open ? " open" : ""}`}>
+      <button className="track-head" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        <span className={`verdict-badge vb-${r.status}`}>
+          <span className="vb-mark">{STATUS_MARK[r.status]}</span>
+          {a.headline}
+        </span>
+        <span className="track-head-main">
+          <span className="track-name" title={r.name}>
+            {r.name}
+          </span>
+          <span className="track-summary">{r.status === "ok" ? a.summary : r.action}</span>
+        </span>
+        <span className="track-dots" aria-hidden>
+          {a.readings.map((rd) => (
+            <span key={rd.key} className={`dot dot-${rd.status}`} title={`${rd.metric}: ${rd.value}`} />
+          ))}
+        </span>
+        <span className={`chev${open ? " up" : ""}`} aria-hidden>
+          ▾
+        </span>
+      </button>
+
+      {open && (
+        <div className="track-detail">
+          {a.readings.map((rd) => (
+            <ReadingRow key={rd.key} rd={rd} />
+          ))}
         </div>
-        <div className="track-verdict">{r.verdict}</div>
-        {r.status !== "ok" && <div className="track-action">{r.action}</div>}
-      </div>
-      <div className="track-metrics">
-        <Metric label="tilt" value={fmtSigned(r.tilt, 1)} unit="dB" flagged={r.tilt < 3} />
-        <Metric label="holds" value={r.holds.toFixed(0)} unit="Hz" flagged={r.holds > 45} />
-        <Metric label="mono" value={fmtSigned(r.mono, 2)} flagged={r.mono < 0.9} />
-        <Metric
-          label="peak"
-          value={r.peakDb.toFixed(1)}
-          unit="dB"
-          flagged={r.clipped >= 100}
-        />
-      </div>
+      )}
     </article>
   );
 }
 
-function Metric({
-  label,
-  value,
-  unit,
-  flagged,
-}: {
-  label: string;
-  value: string;
-  unit?: string;
-  flagged?: boolean;
-}) {
+function ReadingRow({ rd }: { rd: Reading }) {
   return (
-    <div className={`metric${flagged ? " flagged" : ""}`}>
-      <span className="metric-label">{label}</span>
-      <span className="metric-value">
-        {value}
-        {unit ? <span className="metric-unit">{unit}</span> : null}
-      </span>
+    <div className={`reading reading-${rd.status}`}>
+      <div className="reading-top">
+        <span className="reading-label">{rd.label}</span>
+        <span className={`reading-verdict rv-${rd.status}`}>
+          {STATUS_MARK[rd.status]} {rd.value}
+        </span>
+      </div>
+      <Gauge g={rd.gauge} status={rd.status} />
+      <p className="reading-result">{rd.reading}</p>
+      <p className="reading-concept">{rd.concept}</p>
+    </div>
+  );
+}
+
+function Gauge({ g, status }: { g: GaugeData; status: Status }) {
+  const span = g.max - g.min || 1;
+  const clampPct = (v: number) => Math.max(0, Math.min(100, ((v - g.min) / span) * 100));
+  const goodLeft = clampPct(g.goodMin);
+  const goodWidth = clampPct(g.goodMax) - goodLeft;
+  const markLeft = clampPct(g.value);
+  return (
+    <div className="gauge" aria-hidden>
+      <div className="gauge-track">
+        <div className="gauge-good" style={{ left: `${goodLeft}%`, width: `${goodWidth}%` }} />
+        <div className={`gauge-mark gm-${status}`} style={{ left: `${markLeft}%` }} />
+      </div>
+      <div className="gauge-ends">
+        <span>{g.min}</span>
+        <span className="gauge-good-label">good</span>
+        <span>{g.max}</span>
+      </div>
     </div>
   );
 }
@@ -352,13 +387,9 @@ function HowItReads() {
         </div>
       </div>
       <p className="legend-ref">
-        Reference tracks measured tilt +4.0 dB, held to 38 Hz, mono +0.98.
+        Reference tracks measured tilt +4.0 dB, held to 38 Hz, mono +0.98. Every
+        track you drop is scored against those marks.
       </p>
     </section>
   );
-}
-
-function fmtSigned(v: number, digits: number): string {
-  const s = v.toFixed(digits);
-  return v >= 0 ? `+${s}` : s;
 }
