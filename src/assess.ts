@@ -39,7 +39,7 @@ export const READING_INFO: ReadingInfo[] = [
     unit: "",
     plain:
       "How well left and right agree below 100 Hz. Club subs are mono, so anything that differs down low cancels out.",
-    good: "Higher is safer. Above +0.9 the subs get the full signal; below that, weight cancels.",
+    good: "Higher is safer. References sit +0.86 to +1.00; below +0.83 the bass cancels on a mono sub.",
   },
   {
     code: "peak",
@@ -47,7 +47,7 @@ export const READING_INFO: ReadingInfo[] = [
     unit: "dB",
     plain:
       "The loudest sample, plus any clipping baked into the file. A limiter can't rebuild what was already flattened.",
-    good: "Some headroom is healthy. Clipping printed into the file can't be fixed — only replaced.",
+    good: "Loud masters sit at 0 dBFS — that's normal. Only big stretches of flattened waveform can't be fixed.",
   },
 ];
 

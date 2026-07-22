@@ -398,8 +398,9 @@ function HowItReads() {
       <h2>What it reads</h2>
       <GlossaryGrid />
       <p className="legend-ref">
-        Reference tracks measured tilt +4.0 dB, held to 38 Hz, mono +0.98. Every
-        track you drop is scored against those marks.
+        Calibrated against six big-room reference records — they measured tilt +2.5
+        to +9.7 (around +4), held to 28–44 Hz, and mono +0.86 to +1.00. Every track
+        you drop is scored against those marks.
       </p>
     </section>
   );
