@@ -259,8 +259,15 @@ export function analyze(input: AnalyzeInput): TrackMetrics | null {
   return { tilt, holds, mono: mono_corr, peakDb, clipped, crest, loudSecs };
 }
 
-export function verdict(m: TrackMetrics): { status: Status; notes: string[]; verdict: string } {
+export function verdict(m: TrackMetrics): {
+  status: Status;
+  notes: string[];
+  verdict: string;
+  action: string;
+} {
   const notes: string[] = [];
+  // Candidate actions, most severe first; the first one added wins.
+  const actions: string[] = [];
   let status: Status = "ok";
   const bump = (s: Status) => {
     if (s === "problem") status = "problem";
@@ -269,28 +276,35 @@ export function verdict(m: TrackMetrics): { status: Status; notes: string[]; ver
 
   if (m.clipped >= CLIP_FLAG) {
     notes.push(`clipped at source (${m.clipped.toLocaleString()} samples)`);
+    actions.push("Clipped in the file itself — a limiter can't undo it. Find a clean copy.");
     bump("problem");
-  }
-  if (m.tilt < TILT_LOW) {
-    notes.push("thin, needs mid cut");
-    bump("problem");
-  } else if (m.tilt < TILT_OK) {
-    notes.push("light");
-    bump("caution");
-  }
-  if (m.holds > HOLD_HIGH) {
-    notes.push(`no sub under ${m.holds.toFixed(0)} Hz`);
-    bump("problem");
-  } else if (m.holds > HOLD_OK) {
-    notes.push("shallow");
-    bump("caution");
   }
   if (m.mono < MONO_OK) {
     const sign = m.mono >= 0 ? "+" : "";
     notes.push(`phase issue below 100 Hz (${sign}${m.mono.toFixed(2)})`);
+    actions.push("Sum to mono below 100 Hz or replace it — the sub stacks will cancel.");
     bump("problem");
+  }
+  if (m.tilt < TILT_LOW) {
+    notes.push("thin, needs mid cut");
+    actions.push("Thin low end. Cut 2-3 dB around 300-800 Hz, or swap the file.");
+    bump("problem");
+  } else if (m.tilt < TILT_OK) {
+    notes.push("light");
+    actions.push("A touch light. Trim ~1-2 dB of mids so it sits with the heavier tracks.");
+    bump("caution");
+  }
+  if (m.holds > HOLD_HIGH) {
+    notes.push(`no sub under ${m.holds.toFixed(0)} Hz`);
+    actions.push(`Almost no energy under ${m.holds.toFixed(0)} Hz — it'll feel light on a sub-heavy rig.`);
+    bump("problem");
+  } else if (m.holds > HOLD_OK) {
+    notes.push("shallow");
+    actions.push("Sub rolls off early. Fine on tops, a bit shallow on a big system.");
+    bump("caution");
   }
 
   const text = notes.length ? notes.join(", ") : "fills the system";
-  return { status, notes, verdict: text };
+  const action = actions.length ? actions[0] : "Good to go.";
+  return { status, notes, verdict: text, action };
 }
