@@ -22,6 +22,7 @@ export interface TrackResult extends TrackMetrics {
   status: Status;
   notes: string[];
   verdict: string;
+  action: string;
 }
 
 export interface FailedResult {
