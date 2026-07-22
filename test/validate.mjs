@@ -388,7 +388,8 @@ function analyze(input) {
   const crest = 20 * Math.log10(Math.max(loudPeak, 1e-12)) - 20 * Math.log10(Math.max(loudRms, 1e-12));
   const peakDb = 20 * Math.log10(Math.max(peak, 1e-12));
   const loudSecs = runs.reduce((acc, [a, b]) => acc + (b - a), 0);
-  return { tilt, holds, mono: mono_corr, peakDb, clipped, crest, loudSecs };
+  const clippedFrac = clipped / (2 * n);
+  return { tilt, holds, mono: mono_corr, peakDb, clipped, clippedFrac, crest, loudSecs };
 }
 
 // test/validate.ts

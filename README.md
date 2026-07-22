@@ -13,12 +13,28 @@ keep private.
 
 Measured only over the loud sections where the kick and bassline are running:
 
-| Reading | Meaning | Reference club records |
-| ------- | ------- | ---------------------- |
-| **tilt**  | sub-to-mids balance (dB), higher = heavier | +4.0 dB |
-| **holds** | lowest frequency the track actually sustains | down to 38–40 Hz |
-| **mono**  | L/R correlation below 100 Hz (subs get full signal) | +0.98 |
-| **peak**  | sample peak + clipped-sample count | — |
+| Reading | Meaning | Reference records measured |
+| ------- | ------- | -------------------------- |
+| **tilt**  | sub-to-mids balance (dB), higher = heavier | +2.5 to +9.7 (≈ +4) |
+| **holds** | lowest frequency the track actually sustains | 28–44 Hz (median 38) |
+| **mono**  | L/R correlation below 100 Hz (subs get full signal) | +0.86 to +1.00 |
+| **peak**  | sample peak + how much of the track is pinned full-scale | all at 0 dBFS |
+
+### Calibration
+
+The pass marks are set from **six real big-room reference records** (great-sounding
+club masters), not from theory. Running them through the engine showed the naive
+marks were wrong in two ways: every loud master hits 0 dBFS with thousands of
+full-scale samples (so counting clipped samples cried wolf on all of them), and
+the mono/tilt marks were a touch strict. Clipping is now judged by the *fraction*
+of the track pinned full-scale, and the tilt/holds/mono thresholds sit just outside
+the reference spread. Re-run the calibration any time with:
+
+```bash
+# decode any set of records to 44.1k WAV (macOS afconvert), then:
+npx esbuild test/analyze-file.ts --bundle --platform=node --format=esm --outfile=test/af.mjs
+node test/af.mjs /path/to/*.wav
+```
 
 Each track gets one plain-language verdict and one action. The **set-level view** —
 the tilt spread across the whole crate, the lightest and heaviest track, and a

@@ -127,8 +127,8 @@ export function App() {
       {!hasResults && phase === "idle" && <HowItReads />}
 
       <footer className="foot">
-        Seven of the checks come from the same engine used on known-good club records.
-        The three that matter most — sub balance, sub extension and mono behaviour —
+        The pass marks are calibrated against six big-room reference records that
+        sound great on a proper system. Sub balance, sub extension and mono behaviour
         are measured only over the sections where the kick and bassline are running.
         No account, no upload, no cost.
       </footer>
