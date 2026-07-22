@@ -15,6 +15,9 @@ export function fft(re: Float64Array, im: Float64Array): void {
     j ^= bit;
     if (i < j) {
       const tr = re[i]; re[i] = re[j]; re[j] = tr;
+      const ti = im[i]; im[i] = im[j]; im[j] = ti;
+    }
+  }
 
   for (let len = 2; len <= n; len <<= 1) {
     const half = len >> 1;
