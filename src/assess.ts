@@ -23,7 +23,7 @@ export const READING_INFO: ReadingInfo[] = [
     unit: "dB",
     plain:
       "How heavy the low end sits against the mids. A big rig exposes a light bottom that headphones hide.",
-    good: "Higher is heavier. Reference club records sit around +4 dB; below +2 is thin.",
+    good: "Higher is heavier. Reference records run +2.5 to +9.7 (around +4); below +1.5 is thin.",
   },
   {
     code: "holds",
@@ -31,7 +31,7 @@ export const READING_INFO: ReadingInfo[] = [
     unit: "Hz",
     plain:
       "The lowest note the track actually sustains before it rolls off — the weight you feel in your chest, not your ears.",
-    good: "Lower is deeper. Good records reach ~38 Hz; above 55 Hz there's no real sub.",
+    good: "Lower is deeper. References reach 28–44 Hz; above 55 Hz there's no real sub.",
   },
   {
     code: "mono",
@@ -180,29 +180,34 @@ function monoReading(mono: number): Reading {
   };
 }
 
-function peakReading(peakDb: number, clipped: number): Reading {
+function peakReading(peakDb: number, clipped: number, clippedFrac: number): Reading {
+  const pct = clippedFrac * 100;
   let status: Status;
   let reading: string;
-  if (clipped >= 100) {
+  if (clippedFrac > 0.03) {
     status = "problem";
-    reading = `Peak ${peakDb.toFixed(1)} dBFS with ${clipped.toLocaleString()} clipped samples. The distortion is printed into the file — a limiter can't undo it. Find a clean copy.`;
-  } else if (peakDb > -0.5) {
+    reading = `Peak ${peakDb.toFixed(1)} dBFS with ${clipped.toLocaleString()} full-scale samples (${pct.toFixed(1)}% of the track). That's real clipping printed into the file — a limiter can't undo it. Find a clean copy.`;
+  } else if (clippedFrac > 0.01) {
     status = "caution";
-    reading = `Peak ${peakDb.toFixed(1)} dBFS — running right up to the ceiling with barely any headroom before the system's limiter grabs it.`;
+    reading = `Peak ${peakDb.toFixed(1)} dBFS, ${pct.toFixed(1)}% of samples pinned to the ceiling. Loud, and running hot — fine on most rigs, but there's no headroom left.`;
+  } else if (clipped > 0) {
+    status = "ok";
+    reading = `Peak ${peakDb.toFixed(1)} dBFS with a handful of full-scale samples — normal for a loud club master. Nothing to worry about.`;
   } else {
     status = "ok";
     reading = `Peak ${peakDb.toFixed(1)} dBFS, no clipping. Clean headroom.`;
   }
   return {
     key: "peak",
-    label: "True level",
+    label: "Level & clipping",
     metric: "peak",
     value: `${peakDb.toFixed(1)} dB`,
     status,
+    // gauge shows how much of the track is pinned full-scale (percent)
     concept:
-      "Clipping printed into a file is permanent — a limiter can't rebuild what was flattened, and on a revealing system it turns to glare through the mids.",
+      "Loud masters sit right at 0 dBFS — that's normal. What can't be fixed is real clipping, where big stretches of the waveform are flattened; on a revealing system it turns to glare.",
     reading,
-    gauge: { min: -12, max: 0, value: peakDb, goodMin: -12, goodMax: -1 },
+    gauge: { min: 0, max: 3, value: pct, goodMin: 0, goodMax: 1 },
   };
 }
 
@@ -211,7 +216,7 @@ export function assess(m: TrackMetrics, status: Status, action: string): Assessm
     tiltReading(m.tilt),
     holdsReading(m.holds),
     monoReading(m.mono),
-    peakReading(m.peakDb, m.clipped),
+    peakReading(m.peakDb, m.clipped, m.clippedFrac),
   ];
   return {
     status,
