@@ -1,5 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { assess, type Gauge as GaugeData, type Reading } from "./assess";
+import {
+  assess,
+  READING_INFO,
+  type Gauge as GaugeData,
+  type Reading,
+  type ReadingInfo,
+} from "./assess";
 import { filesFromDrop } from "./files";
 import { downloadCsv, summarise, toCsv } from "./setSummary";
 import { useAnalyzer } from "./useAnalyzer";
@@ -16,6 +22,11 @@ const STATUS_MARK: Record<Status, string> = {
   caution: "!",
   problem: "✕",
 };
+
+const READING_BY_CODE = Object.fromEntries(READING_INFO.map((r) => [r.code, r])) as Record<
+  ReadingInfo["code"],
+  ReadingInfo
+>;
 
 export function App() {
   const { phase, results, failures, progress, run, reset } = useAnalyzer();
@@ -82,11 +93,14 @@ export function App() {
       )}
 
       {results.length > 0 && (
-        <section className="results">
-          {results.map((r, i) => (
-            <TrackCard key={`${r.name}-${i}`} r={r} />
-          ))}
-        </section>
+        <>
+          <ReadingsKey />
+          <section className="results">
+            {results.map((r, i) => (
+              <TrackCard key={`${r.name}-${i}`} r={r} />
+            ))}
+          </section>
+        </>
       )}
 
       {failures.length > 0 && (
@@ -294,9 +308,16 @@ function TrackCard({ r }: { r: TrackResult }) {
           </span>
           <span className="track-summary">{r.status === "ok" ? a.summary : r.action}</span>
         </span>
-        <span className="track-dots" aria-hidden>
+        <span className="track-chips">
           {a.readings.map((rd) => (
-            <span key={rd.key} className={`dot dot-${rd.status}`} title={`${rd.metric}: ${rd.value}`} />
+            <span
+              key={rd.key}
+              className={`chip chip-${rd.status}`}
+              title={READING_BY_CODE[rd.key].plain}
+            >
+              <span className="chip-label">{rd.metric}</span>
+              <span className="chip-value">{rd.value}</span>
+            </span>
           ))}
         </span>
         <span className={`chev${open ? " up" : ""}`} aria-hidden>
@@ -306,6 +327,7 @@ function TrackCard({ r }: { r: TrackResult }) {
 
       {open && (
         <div className="track-detail">
+          <p className="detail-hint">What each reading means and how this track did:</p>
           {a.readings.map((rd) => (
             <ReadingRow key={rd.key} rd={rd} />
           ))}
@@ -352,44 +374,54 @@ function Gauge({ g, status }: { g: GaugeData; status: Status }) {
   );
 }
 
+function GlossaryGrid() {
+  return (
+    <div className="legend-grid">
+      {READING_INFO.map((info) => (
+        <div key={info.code}>
+          <h3>
+            {info.code}
+            {info.unit ? <span className="legend-unit"> {info.unit}</span> : null}
+          </h3>
+          <p>{info.plain}</p>
+          <p className="legend-good">{info.good}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Shown on the landing screen, before any track is dropped.
 function HowItReads() {
   return (
     <section className="legend">
       <h2>What it reads</h2>
-      <div className="legend-grid">
-        <div>
-          <h3>tilt</h3>
-          <p>
-            Sub-to-mids balance in dB. Higher is heavier. Reference club records sit around
-            +4. Below +2 the track is thin; a 3 dB gap across a set is an audible step.
-          </p>
-        </div>
-        <div>
-          <h3>holds</h3>
-          <p>
-            The lowest frequency the track actually sustains before it rolls off. Good records
-            hold down to 38–40 Hz. If it gives up above 55 Hz there&apos;s no real sub there.
-          </p>
-        </div>
-        <div>
-          <h3>mono</h3>
-          <p>
-            How well the left and right agree below 100 Hz. Above +0.9 the sub stacks get the
-            full signal. Lower means phase problems that cancel weight on a mono sub.
-          </p>
-        </div>
-        <div>
-          <h3>peak</h3>
-          <p>
-            Sample peak, plus a count of clipped samples. Clipping baked into the file can&apos;t
-            be undone by a limiter — the only fix is a clean copy.
-          </p>
-        </div>
-      </div>
+      <GlossaryGrid />
       <p className="legend-ref">
         Reference tracks measured tilt +4.0 dB, held to 38 Hz, mono +0.98. Every
         track you drop is scored against those marks.
       </p>
+    </section>
+  );
+}
+
+// A collapsible version of the glossary that stays available while you're
+// looking at results, so the meaning of each reading is always one tap away.
+function ReadingsKey() {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className={`key${open ? " open" : ""}`}>
+      <button className="key-toggle" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        <span>What do tilt · holds · mono · peak mean?</span>
+        <span className={`chev${open ? " up" : ""}`} aria-hidden>
+          ▾
+        </span>
+      </button>
+      {open && (
+        <div className="key-body">
+          <GlossaryGrid />
+        </div>
+      )}
     </section>
   );
 }

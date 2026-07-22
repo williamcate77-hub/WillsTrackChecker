@@ -5,6 +5,52 @@
 
 import type { Status, TrackMetrics } from "./dsp/types";
 
+// One-glance definitions for each reading. Shown as tooltips on the chips, in
+// the results-time key, and on the landing screen — so nobody has to guess what
+// tilt / holds / mono / peak mean.
+export interface ReadingInfo {
+  code: "tilt" | "holds" | "mono" | "peak";
+  title: string;
+  unit: string;
+  plain: string; // the short, plain-language definition
+  good: string; // what a good reading looks like
+}
+
+export const READING_INFO: ReadingInfo[] = [
+  {
+    code: "tilt",
+    title: "Sub weight",
+    unit: "dB",
+    plain:
+      "How heavy the low end sits against the mids. A big rig exposes a light bottom that headphones hide.",
+    good: "Higher is heavier. Reference club records sit around +4 dB; below +2 is thin.",
+  },
+  {
+    code: "holds",
+    title: "Sub extension",
+    unit: "Hz",
+    plain:
+      "The lowest note the track actually sustains before it rolls off — the weight you feel in your chest, not your ears.",
+    good: "Lower is deeper. Good records reach ~38 Hz; above 55 Hz there's no real sub.",
+  },
+  {
+    code: "mono",
+    title: "Mono behaviour",
+    unit: "",
+    plain:
+      "How well left and right agree below 100 Hz. Club subs are mono, so anything that differs down low cancels out.",
+    good: "Higher is safer. Above +0.9 the subs get the full signal; below that, weight cancels.",
+  },
+  {
+    code: "peak",
+    title: "True level",
+    unit: "dB",
+    plain:
+      "The loudest sample, plus any clipping baked into the file. A limiter can't rebuild what was already flattened.",
+    good: "Some headroom is healthy. Clipping printed into the file can't be fixed — only replaced.",
+  },
+];
+
 export interface Gauge {
   min: number;
   max: number;
