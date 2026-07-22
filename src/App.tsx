@@ -126,7 +126,7 @@ function DropZone({
 }) {
   const [dragging, setDragging] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
-  const folderInput = useRef<HTMLInputElement>(null);
+  const folderInput = useRef<HTMLInputElement | null>(null);
 
   const setFolderAttrs = useCallback((el: HTMLInputElement | null) => {
     folderInput.current = el;
