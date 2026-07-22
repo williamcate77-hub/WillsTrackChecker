@@ -8,16 +8,21 @@ import { sosfiltfilt } from "./filters";
 import { welch, type Psd } from "./welch";
 import type { Status, TrackMetrics } from "./types";
 
-// Pass marks taken from the reference tracks (identical to subcheck.py).
-const TILT_OK = 3.0;
-const TILT_LOW = 2.0;
-const HOLD_OK = 45.0;
-const HOLD_HIGH = 55.0;
-const MONO_OK = 0.9;
+// Pass marks calibrated from six big-room reference records (measured tilt +2.5
+// to +9.7 / median +4, held 28-44 Hz, mono +0.86 to +1.00). See README.
+const TILT_OK = 2.5; // below this = light
+const TILT_LOW = 1.5; // below this = thin
+const HOLD_OK = 45.0; // above this = shallow
+const HOLD_HIGH = 55.0; // above this = no real sub
+const MONO_CAUTION = 0.93; // below this = a touch wide
+const MONO_OK = 0.83; // below this = cancels on a mono sub
 
-// A track with this many full-scale samples is clipped at source.
-const CLIP_FLAG = 100;
+// Loud masters routinely sit at 0 dBFS, so a few full-scale samples are normal
+// (the references had 85-47,440 of them and all sound great). Judge clipping by
+// how much of the track is pinned full-scale, not by any single sample.
 const CLIP_LEVEL = 0.9997;
+const CLIP_CAUTION_FRAC = 0.01; // 1% of samples pinned = running hot
+const CLIP_PROBLEM_FRAC = 0.03; // 3% = genuinely clipped / destroyed
 
 function toFloat64(a: Float32Array): Float64Array {
   const out = new Float64Array(a.length);
@@ -255,8 +260,9 @@ export function analyze(input: AnalyzeInput): TrackMetrics | null {
     20 * Math.log10(Math.max(loudPeak, 1e-12)) - 20 * Math.log10(Math.max(loudRms, 1e-12));
   const peakDb = 20 * Math.log10(Math.max(peak, 1e-12));
   const loudSecs = runs.reduce((acc, [a, b]) => acc + (b - a), 0);
+  const clippedFrac = clipped / (2 * n);
 
-  return { tilt, holds, mono: mono_corr, peakDb, clipped, crest, loudSecs };
+  return { tilt, holds, mono: mono_corr, peakDb, clipped, clippedFrac, crest, loudSecs };
 }
 
 export function verdict(m: TrackMetrics): {
@@ -274,16 +280,25 @@ export function verdict(m: TrackMetrics): {
     else if (s === "caution" && status === "ok") status = "caution";
   };
 
-  if (m.clipped >= CLIP_FLAG) {
+  if (m.clippedFrac > CLIP_PROBLEM_FRAC) {
     notes.push(`clipped at source (${m.clipped.toLocaleString()} samples)`);
-    actions.push("Clipped in the file itself — a limiter can't undo it. Find a clean copy.");
+    actions.push("Heavily clipped in the file itself — a limiter can't undo it. Find a clean copy.");
     bump("problem");
+  } else if (m.clippedFrac > CLIP_CAUTION_FRAC) {
+    notes.push("running hot");
+    actions.push("Sits right on the ceiling. Fine on most rigs, but leave a touch of headroom if you can.");
+    bump("caution");
   }
   if (m.mono < MONO_OK) {
     const sign = m.mono >= 0 ? "+" : "";
     notes.push(`phase issue below 100 Hz (${sign}${m.mono.toFixed(2)})`);
     actions.push("Sum to mono below 100 Hz or replace it — the sub stacks will cancel.");
     bump("problem");
+  } else if (m.mono < MONO_CAUTION) {
+    const sign = m.mono >= 0 ? "+" : "";
+    notes.push(`bass a touch wide (${sign}${m.mono.toFixed(2)})`);
+    actions.push("Low end is a little wide. Most of it reaches the subs, but keep an eye on it.");
+    bump("caution");
   }
   if (m.tilt < TILT_LOW) {
     notes.push("thin, needs mid cut");

@@ -11,6 +11,8 @@ export interface TrackMetrics {
   peakDb: number;
   /** number of full-scale (clipped) samples across both channels */
   clipped: number;
+  /** fraction of all samples pinned full-scale (0..1) */
+  clippedFrac: number;
   /** crest factor over the loud sections, in dB (peak - RMS) */
   crest: number;
   /** total seconds of "loud" (kick + bass running) analysed */

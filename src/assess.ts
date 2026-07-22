@@ -98,15 +98,15 @@ function fmtSigned(v: number, digits: number): string {
 function tiltReading(tilt: number): Reading {
   let status: Status;
   let reading: string;
-  if (tilt >= 3) {
+  if (tilt >= 2.5) {
     status = "ok";
     reading =
       tilt >= 4
-        ? `As heavy as a reference club record (~+4 dB). The low end is right where it should be.`
-        : `Solid — sits just under a reference record. The kick and bass will land.`;
-  } else if (tilt >= 2) {
+        ? `In the reference range (they run +2.5 to +9.7, around +4 typical). The kick and bass will land.`
+        : `Solid — inside the reference range. The low end sits with the good records.`;
+  } else if (tilt >= 1.5) {
     status = "caution";
-    reading = `About ${(4 - tilt).toFixed(1)} dB lighter than a reference record. Next to heavier tracks it'll feel like the level drops.`;
+    reading = `Lighter than the reference records (~+4). Next to the heavier tracks it'll feel like the level drops.`;
   } else {
     status = "problem";
     reading = `Thin. The low end is buried under the mids and won't land on a big system.`;
@@ -120,7 +120,7 @@ function tiltReading(tilt: number): Reading {
     concept:
       "How heavy the low end sits against the mids. A big rig exposes a light bottom end that headphones and small monitors hide.",
     reading,
-    gauge: { min: 0, max: 6, value: tilt, goodMin: 3, goodMax: 6 },
+    gauge: { min: 0, max: 8, value: tilt, goodMin: 2.5, goodMax: 8 },
   };
 }
 
@@ -147,7 +147,7 @@ function holdsReading(holds: number): Reading {
       "The lowest note the track actually sustains before it rolls off. On a big sub you feel this in your chest, not your ears.",
     reading,
     // lower is better: the good zone is the low end of the scale
-    gauge: { min: 35, max: 60, value: holds, goodMin: 35, goodMax: 45 },
+    gauge: { min: 25, max: 60, value: holds, goodMin: 25, goodMax: 45 },
   };
 }
 
@@ -157,12 +157,12 @@ function monoReading(mono: number): Reading {
   if (mono >= 0.95) {
     status = "ok";
     reading = `Mono-safe. The left and right agree down low, so the sub stacks receive the whole signal.`;
-  } else if (mono >= 0.9) {
+  } else if (mono >= 0.93) {
     status = "ok";
     reading = `Mostly mono — the subs get almost everything. No real cause for concern.`;
-  } else if (mono >= 0.8) {
+  } else if (mono >= 0.83) {
     status = "caution";
-    reading = `The low end differs a little between left and right. Some of it will thin out on a mono sub.`;
+    reading = `The low end is a little wide (references sit +0.86 to +1.00). Most reaches the subs, but some will thin out on a mono sub.`;
   } else {
     status = "problem";
     reading = `The bass is wide stereo. A big chunk of it cancels on a mono sub stack and the weight disappears.`;
@@ -176,7 +176,7 @@ function monoReading(mono: number): Reading {
     concept:
       "Club subs are usually one mono stack. Anything that differs between left and right down low cancels out and takes real weight with it.",
     reading,
-    gauge: { min: 0.6, max: 1, value: mono, goodMin: 0.9, goodMax: 1 },
+    gauge: { min: 0.6, max: 1, value: mono, goodMin: 0.85, goodMax: 1 },
   };
 }
 
