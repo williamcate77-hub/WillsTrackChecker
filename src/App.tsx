@@ -424,7 +424,7 @@ const HOW_IT_WORKS: { lead: string; rest: string }[] = [
   },
   {
     lead: "“Tilt” weighs the sub against the mids.",
-    rest: "It compares the energy from 20–60 Hz to the energy from 250–2000 Hz, in decibels. Higher means the low end carries its weight; great records sit around +4 dB.",
+    rest: "It compares the energy from 20–60 Hz to the energy from 250–2000 Hz, in decibels. Higher means the low end carries its weight; the reference records here run +4 to +10.",
   },
   {
     lead: "“Holds” finds the lowest note that survives, and “mono” checks the sides agree down low.",
@@ -442,16 +442,16 @@ function HowItWorks() {
     <section className="how">
       <h2>How it works</h2>
       <p className="how-sub">Every track is read on your own machine. Nothing is ever uploaded.</p>
-      <ol className="how-list">
+      <div className="how-list">
         {HOW_IT_WORKS.map((item, i) => (
-          <li key={i}>
+          <div className="how-item" key={i}>
             <span className="how-num">{i + 1}</span>
             <span className="how-text">
               <strong>{item.lead}</strong> {item.rest}
             </span>
-          </li>
+          </div>
         ))}
-      </ol>
+      </div>
     </section>
   );
 }
@@ -463,8 +463,8 @@ function HowItReads() {
       <h2>What it reads</h2>
       <GlossaryGrid />
       <p className="legend-ref">
-        Calibrated against six big-room reference records — they measured tilt +2.5
-        to +9.7 (around +4), held to 28–44 Hz, and mono +0.86 to +1.00. Every track
+        Calibrated against six big-room reference records — they measured tilt +4.2
+        to +10.4 (around +8), held to 39–44 Hz, and mono +0.995 to +1.00. Every track
         you drop is scored against those marks.
       </p>
     </section>

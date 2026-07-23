@@ -8,10 +8,10 @@ import { sosfiltfilt } from "./filters";
 import { welch, type Psd } from "./welch";
 import type { Status, TrackMetrics } from "./types";
 
-// Pass marks calibrated from six big-room reference records (measured tilt +2.5
-// to +9.7 / median +4, held 28-44 Hz, mono +0.86 to +1.00). See README.
-const TILT_OK = 2.5; // below this = light
-const TILT_LOW = 1.5; // below this = thin
+// Pass marks calibrated from six big-room reference records (measured tilt +4.2
+// to +10.4 / median +8, held 39-44 Hz, mono +0.995 to +1.00). See README.
+const TILT_OK = 4.0; // below this = light
+const TILT_LOW = 2.5; // below this = thin
 const HOLD_OK = 45.0; // above this = shallow
 const HOLD_HIGH = 55.0; // above this = no real sub
 const MONO_CAUTION = 0.93; // below this = a touch wide

@@ -15,9 +15,9 @@ Measured only over the loud sections where the kick and bassline are running:
 
 | Reading | Meaning | Reference records measured |
 | ------- | ------- | -------------------------- |
-| **tilt**  | sub-to-mids balance (dB), higher = heavier | +2.5 to +9.7 (≈ +4) |
-| **holds** | lowest frequency the track actually sustains | 28–44 Hz (median 38) |
-| **mono**  | L/R correlation below 100 Hz (subs get full signal) | +0.86 to +1.00 |
+| **tilt**  | sub-to-mids balance (dB), higher = heavier | +4.2 to +10.4 (≈ +8) |
+| **holds** | lowest frequency the track actually sustains | 39–44 Hz (median 40) |
+| **mono**  | L/R correlation below 100 Hz (subs get full signal) | +0.995 to +1.00 |
 | **peak**  | sample peak + how much of the track is pinned full-scale | all at 0 dBFS |
 
 ### Calibration

@@ -23,7 +23,7 @@ export const READING_INFO: ReadingInfo[] = [
     unit: "dB",
     plain:
       "How heavy the low end sits against the mids. A big rig exposes a light bottom that headphones hide.",
-    good: "Higher is heavier. Reference records run +2.5 to +9.7 (around +4); below +1.5 is thin.",
+    good: "Higher is heavier. Reference records run +4 to +10 (around +8); below +2.5 is thin.",
   },
   {
     code: "holds",
@@ -31,7 +31,7 @@ export const READING_INFO: ReadingInfo[] = [
     unit: "Hz",
     plain:
       "The lowest note the track actually sustains before it rolls off — the weight you feel in your chest, not your ears.",
-    good: "Lower is deeper. References reach 28–44 Hz; above 55 Hz there's no real sub.",
+    good: "Lower is deeper. References reach 39–44 Hz; above 55 Hz there's no real sub.",
   },
   {
     code: "mono",
@@ -39,7 +39,7 @@ export const READING_INFO: ReadingInfo[] = [
     unit: "",
     plain:
       "How well left and right agree below 100 Hz. Club subs are mono, so anything that differs down low cancels out.",
-    good: "Higher is safer. References sit +0.86 to +1.00; below +0.83 the bass cancels on a mono sub.",
+    good: "Higher is safer. References sit +0.99 to +1.00; below +0.83 the bass cancels on a mono sub.",
   },
   {
     code: "peak",
@@ -98,15 +98,15 @@ function fmtSigned(v: number, digits: number): string {
 function tiltReading(tilt: number): Reading {
   let status: Status;
   let reading: string;
-  if (tilt >= 2.5) {
+  if (tilt >= 4.0) {
     status = "ok";
     reading =
-      tilt >= 4
-        ? `In the reference range (they run +2.5 to +9.7, around +4 typical). The kick and bass will land.`
-        : `Solid — inside the reference range. The low end sits with the good records.`;
-  } else if (tilt >= 1.5) {
+      tilt >= 8
+        ? `Right in the reference range (they run +4 to +10, around +8). Serious weight — the kick and bass will land.`
+        : `Inside the reference range (+4 to +10). The low end sits with the good records.`;
+  } else if (tilt >= 2.5) {
     status = "caution";
-    reading = `Lighter than the reference records (~+4). Next to the heavier tracks it'll feel like the level drops.`;
+    reading = `Lighter than the reference records (they sit +4 to +10). Next to the heavier tracks it'll feel like the level drops.`;
   } else {
     status = "problem";
     reading = `Thin. The low end is buried under the mids and won't land on a big system.`;
@@ -120,7 +120,7 @@ function tiltReading(tilt: number): Reading {
     concept:
       "How heavy the low end sits against the mids. A big rig exposes a light bottom end that headphones and small monitors hide.",
     reading,
-    gauge: { min: 0, max: 8, value: tilt, goodMin: 2.5, goodMax: 8 },
+    gauge: { min: 0, max: 12, value: tilt, goodMin: 4, goodMax: 12 },
   };
 }
 
@@ -129,7 +129,7 @@ function holdsReading(holds: number): Reading {
   let reading: string;
   if (holds <= 45) {
     status = "ok";
-    reading = `Holds down to ${holds.toFixed(0)} Hz — full sub extension (reference records reach ~38 Hz). You'll feel the bottom octave.`;
+    reading = `Holds down to ${holds.toFixed(0)} Hz — full sub extension (reference records reach ~40 Hz). You'll feel the bottom octave.`;
   } else if (holds <= 55) {
     status = "caution";
     reading = `Rolls off at ${holds.toFixed(0)} Hz, so the bottom octave is missing. Fine on tops, shallow on a big sub.`;
@@ -162,7 +162,7 @@ function monoReading(mono: number): Reading {
     reading = `Mostly mono — the subs get almost everything. No real cause for concern.`;
   } else if (mono >= 0.83) {
     status = "caution";
-    reading = `The low end is a little wide (references sit +0.86 to +1.00). Most reaches the subs, but some will thin out on a mono sub.`;
+    reading = `The low end is a little wide (references sit +0.99 to +1.00). Most reaches the subs, but some will thin out on a mono sub.`;
   } else {
     status = "problem";
     reading = `The bass is wide stereo. A big chunk of it cancels on a mono sub stack and the weight disappears.`;
