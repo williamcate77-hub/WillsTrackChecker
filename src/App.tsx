@@ -126,6 +126,8 @@ export function App() {
 
       {!hasResults && phase === "idle" && <HowItReads />}
 
+      <HowItWorks />
+
       <footer className="foot">
         The pass marks are calibrated against six big-room reference records that
         sound great on a proper system. Sub balance, sub extension and mono behaviour
@@ -388,6 +390,69 @@ function GlossaryGrid() {
         </div>
       ))}
     </div>
+  );
+}
+
+const HOW_IT_WORKS: { lead: string; rest: string }[] = [
+  {
+    lead: "It's a web page, not a service.",
+    rest: "There's no server doing the work — the analyser is shipped to your browser and runs there. The site only hands you the page; it never sees your music.",
+  },
+  {
+    lead: "Your files never leave your laptop.",
+    rest: "When you drop a folder, the browser reads each track straight off your disk into memory and decodes it locally. Zero uploads, zero copies, nothing stored.",
+  },
+  {
+    lead: "Everything is levelled to a common format first.",
+    rest: "Each track is decoded and resampled to 44,100 samples a second in stereo, so an mp3, an m4a and a WAV all get judged on identical footing.",
+  },
+  {
+    lead: "The heavy maths runs in a background thread,",
+    rest: "so a whole crate can be analysed without the page ever freezing — all inside your browser tab.",
+  },
+  {
+    lead: "It only listens where the track is working hardest.",
+    rest: "A filter finds the sections where the kick and bassline are running at full power and ignores the rest. It measures the drop, not the calm, because that's what a big system exposes.",
+  },
+  {
+    lead: "The filtering is phase-accurate.",
+    rest: "Each filter is run forwards and then backwards, which cancels out any timing smear the process could introduce — so the low-end readings aren't distorted by the tool itself.",
+  },
+  {
+    lead: "The frequency picture is built by averaging many overlapping snapshots",
+    rest: "of the audio through an FFT. That turns a noisy signal into a stable, trustworthy spectrum to read the sub and mid energy from.",
+  },
+  {
+    lead: "“Tilt” weighs the sub against the mids.",
+    rest: "It compares the energy from 20–60 Hz to the energy from 250–2000 Hz, in decibels. Higher means the low end carries its weight; great records sit around +4 dB.",
+  },
+  {
+    lead: "“Holds” finds the lowest note that survives, and “mono” checks the sides agree down low.",
+    rest: "Holds is the frequency where the sub gives out. Mono is how well left and right match below 100 Hz — club subs are mono, so anything that disagrees down there cancels and loses weight.",
+  },
+  {
+    lead: "“Clipping” is judged by proportion, not one loud sample.",
+    rest: "Loud masters normally touch full scale, so a track is only flagged when a real chunk of it is pinned there. The whole verdict is calibrated against six big-room records that already sound great on a proper system.",
+  },
+];
+
+// Always-visible explainer at the foot of the page.
+function HowItWorks() {
+  return (
+    <section className="how">
+      <h2>How it works</h2>
+      <p className="how-sub">Every track is read on your own machine. Nothing is ever uploaded.</p>
+      <ol className="how-list">
+        {HOW_IT_WORKS.map((item, i) => (
+          <li key={i}>
+            <span className="how-num">{i + 1}</span>
+            <span className="how-text">
+              <strong>{item.lead}</strong> {item.rest}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
